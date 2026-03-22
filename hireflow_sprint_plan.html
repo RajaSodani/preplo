@@ -1,0 +1,225 @@
+
+<style>
+  .sp { padding: 1rem 0; font-family: var(--font-sans); }
+  .sprint { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); margin-bottom: 10px; overflow: hidden; }
+  .sprint-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; user-select: none; }
+  .sprint-header:hover { background: var(--color-background-secondary); }
+  .sprint-num { font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
+  .sprint-title { font-size: 14px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+  .sprint-goal { font-size: 12px; color: var(--color-text-secondary); }
+  .chevron { font-size: 10px; color: var(--color-text-tertiary); transition: transform .2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .sprint-body { display: none; padding: 0 14px 12px; border-top: 0.5px solid var(--color-border-tertiary); }
+  .sprint-body.open { display: block; }
+  .task-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .task { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 7px 10px; }
+  .task-cat { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: .07em; color: var(--color-text-tertiary); margin-bottom: 2px; }
+  .task-text { font-size: 12px; color: var(--color-text-primary); line-height: 1.4; }
+  .deliverable { margin-top: 8px; font-size: 12px; color: var(--color-text-secondary); }
+  .del-label { font-weight: 500; color: var(--color-text-primary); }
+  .tag-kafka { background: #FAEEDA; color: #633806; font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 500; }
+  .tag-ai { background: #EEEDFE; color: #3C3489; font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 500; }
+  .tag-auth { background: #E1F5EE; color: #085041; font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 500; }
+  .tag-billing { background: #E6F1FB; color: #0C447C; font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 500; }
+  .progress-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .progress-track { flex: 1; height: 4px; background: var(--color-background-secondary); border-radius: 2px; }
+  .progress-fill { height: 100%; border-radius: 2px; }
+</style>
+
+<div class="sp">
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;">
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center;">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">8</div>
+    <div style="font-size:11px;color:var(--color-text-tertiary)">sprints</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center;">
+    <div style="font-size:20px;font-weight:500;color:var(--color-text-primary)">~8wk</div>
+    <div style="font-size:11px;color:var(--color-text-tertiary)">total timeline</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center;">
+    <div style="font-size:20px;font-weight:500;color:#534AB7">S4</div>
+    <div style="font-size:11px;color:var(--color-text-tertiary)">MVP ready</div>
+  </div>
+  <div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px;text-align:center;">
+    <div style="font-size:20px;font-weight:500;color:#0F6E56">S8</div>
+    <div style="font-size:11px;color:var(--color-text-tertiary)">prod launch</div>
+  </div>
+</div>
+
+<div id="sprints"></div>
+
+</div>
+
+<script>
+const sprints = [
+  {
+    num: "Sprint 1", color: "#E1F5EE", textColor: "#085041",
+    title: "Project scaffold + auth foundation",
+    goal: "Runnable monorepo, auth working end-to-end",
+    tasks: [
+      { cat: "Backend", text: "Express app, folder structure, middleware chain" },
+      { cat: "Backend", text: "JWT auth + Google OAuth2 with Passport.js" },
+      { cat: "Database", text: "PostgreSQL setup, Knex migrations, users table" },
+      { cat: "Frontend", text: "Vite + React, routing, protected routes, auth context" },
+      { cat: "Infra", text: "Docker Compose: postgres + redis + zookeeper + kafka" },
+      { cat: "Infra", text: "ESLint, Prettier, Husky pre-commit hooks" },
+    ],
+    tags: ["auth"],
+    deliverable: "Login/signup flow works. Kafka container runs locally.",
+    progress: 12,
+  },
+  {
+    num: "Sprint 2", color: "#EEEDFE", textColor: "#3C3489",
+    title: "JD parsing pipeline + Kafka producer",
+    goal: "JD submitted → event on Kafka → prep kit job queued",
+    tasks: [
+      { cat: "Backend", text: "JD upload REST endpoint, text extraction (pdf-parse)" },
+      { cat: "AI", text: "Claude API integration: skill extraction prompt + schema" },
+      { cat: "Kafka", text: "Producer: publish jd.submitted topic on JD save" },
+      { cat: "Kafka", text: "AI worker consumer: subscribe jd.submitted, call Claude" },
+      { cat: "Database", text: "jd_analyses + prep_kits tables, status state machine" },
+      { cat: "Frontend", text: "JD paste / upload form, polling for prep kit status" },
+    ],
+    tags: ["kafka", "ai"],
+    deliverable: "User pastes JD → async Kafka pipeline → prep kit stored in DB.",
+    progress: 25,
+  },
+  {
+    num: "Sprint 3", color: "#EEEDFE", textColor: "#3C3489",
+    title: "Resume match scoring + pgvector",
+    goal: "Upload resume → get skill gap score vs JD",
+    tasks: [
+      { cat: "Database", text: "Add pgvector extension, vector column on resumes" },
+      { cat: "Backend", text: "Resume upload to S3/R2, parse with pdf-parse" },
+      { cat: "AI", text: "Embedding generation via Claude/OpenAI, store vector" },
+      { cat: "Backend", text: "Cosine similarity query: resume vec vs JD skill vec" },
+      { cat: "Kafka", text: "resume.uploaded topic → embedding worker consumer" },
+      { cat: "Frontend", text: "Gap report UI: skill match %, missing skills list" },
+    ],
+    tags: ["kafka", "ai"],
+    deliverable: "Resume vs JD gap report rendered with match score.",
+    progress: 38,
+  },
+  {
+    num: "Sprint 4", color: "#FAEEDA", textColor: "#633806",
+    title: "Mock interview engine (text mode) — MVP",
+    goal: "Full interview session: question → answer → score",
+    tasks: [
+      { cat: "Backend", text: "Interview session CRUD, question selection from prep kit" },
+      { cat: "AI", text: "Answer scoring prompt: rubric eval + improvement tips" },
+      { cat: "Kafka", text: "interview.completed topic → score worker consumer" },
+      { cat: "Database", text: "interview_sessions + interview_answers tables" },
+      { cat: "Frontend", text: "Chat-style interview UI, answer input, score display" },
+      { cat: "Frontend", text: "Session summary page: per-question breakdown" },
+    ],
+    tags: ["kafka", "ai"],
+    deliverable: "MVP complete. User can do full JD → prep → interview → score loop.",
+    progress: 50,
+  },
+  {
+    num: "Sprint 5", color: "#E6F1FB", textColor: "#0C447C",
+    title: "Billing + freemium gates",
+    goal: "Razorpay subscriptions, plan-gated API routes",
+    tasks: [
+      { cat: "Billing", text: "Razorpay subscription plan setup (Free / Pro ₹199)" },
+      { cat: "Backend", text: "Webhook handler for payment events → Kafka billing.event" },
+      { cat: "Backend", text: "Plan middleware: check user.plan before JD analysis" },
+      { cat: "Database", text: "subscriptions table, usage_counters table" },
+      { cat: "Frontend", text: "Pricing page, upgrade flow, usage limit banner" },
+      { cat: "Backend", text: "Usage counter: 3 analyses/month for free plan" },
+    ],
+    tags: ["billing", "kafka"],
+    deliverable: "Freemium gates work. Razorpay checkout live in test mode.",
+    progress: 62,
+  },
+  {
+    num: "Sprint 6", color: "#FAEEDA", textColor: "#633806",
+    title: "Voice interview + notifications",
+    goal: "WebSpeech API voice mode, email alerts via Kafka",
+    tasks: [
+      { cat: "Frontend", text: "WebSpeech API: speech-to-text for interview answers" },
+      { cat: "Backend", text: "Voice answer endpoint, transcription storage" },
+      { cat: "Kafka", text: "notif.send consumer → SendGrid transactional email" },
+      { cat: "Backend", text: "Notification triggers: prep kit ready, session scored" },
+      { cat: "Frontend", text: "Email preference settings, notification history" },
+      { cat: "Infra", text: "Kafka dead-letter queue for failed notif events" },
+    ],
+    tags: ["kafka", "ai"],
+    deliverable: "Voice interview mode works. Email notifications delivered via Kafka.",
+    progress: 75,
+  },
+  {
+    num: "Sprint 7", color: "#F1EFE8", textColor: "#444441",
+    title: "Admin dashboard + rate limiting",
+    goal: "Usage analytics, Redis rate limiting, company question banks",
+    tasks: [
+      { cat: "Backend", text: "Redis sliding window rate limiter on AI endpoints" },
+      { cat: "Backend", text: "Admin role + protected /admin routes" },
+      { cat: "Frontend", text: "Admin dashboard: signups, MAU, conversion funnel" },
+      { cat: "AI", text: "Company-specific question bank seeding (TCS, Infosys, etc.)" },
+      { cat: "Backend", text: "API versioning: /api/v1 prefix, deprecation headers" },
+      { cat: "Infra", text: "Prometheus metrics endpoint, Kafka consumer lag alert" },
+    ],
+    tags: ["auth"],
+    deliverable: "Admin can see usage. Rate limiting protects AI cost.",
+    progress: 87,
+  },
+  {
+    num: "Sprint 8", color: "#EAF3DE", textColor: "#27500A",
+    title: "Hardening, CI/CD, prod deploy",
+    goal: "Production-ready: tests, pipeline, live URL",
+    tasks: [
+      { cat: "Testing", text: "Jest unit tests: auth, billing, scoring modules (>70% cov)" },
+      { cat: "Testing", text: "Supertest integration tests for critical API routes" },
+      { cat: "Infra", text: "GitHub Actions: lint → test → build → deploy to Render" },
+      { cat: "Infra", text: "Env secrets management, .env.example documented" },
+      { cat: "Infra", text: "Kafka on Upstash (managed) for prod, connection pooling" },
+      { cat: "Docs", text: "README: architecture diagram, setup guide, API docs" },
+    ],
+    tags: ["auth"],
+    deliverable: "Live prod URL. GitHub CI green. README ready for resume link.",
+    progress: 100,
+  },
+];
+
+const tagMap = { kafka: "tag-kafka", ai: "tag-ai", auth: "tag-auth", billing: "tag-billing" };
+const tagLabel = { kafka: "Kafka", ai: "AI/LLM", auth: "Auth/RBAC", billing: "Billing" };
+
+const container = document.getElementById('sprints');
+sprints.forEach((s, i) => {
+  const div = document.createElement('div');
+  div.className = 'sprint';
+  const tagHtml = s.tags.map(t => `<span class="${tagMap[t]}">${tagLabel[t]}</span>`).join(' ');
+  div.innerHTML = `
+    <div class="sprint-header" onclick="toggleSprint(${i})">
+      <span class="sprint-num" style="background:${s.color};color:${s.textColor}">${s.num}</span>
+      <span class="sprint-title">${s.title}</span>
+      <span style="display:flex;gap:4px;align-items:center">${tagHtml}</span>
+      <span class="chevron" id="chev-${i}">▶</span>
+    </div>
+    <div class="sprint-body" id="body-${i}">
+      <div style="font-size:12px;color:var(--color-text-secondary);margin-top:8px">${s.goal}</div>
+      <div class="task-grid">
+        ${s.tasks.map(t => `<div class="task"><div class="task-cat">${t.cat}</div><div class="task-text">${t.text}</div></div>`).join('')}
+      </div>
+      <div class="progress-row">
+        <span style="font-size:11px;color:var(--color-text-tertiary);width:60px">Progress</span>
+        <div class="progress-track"><div class="progress-fill" style="width:${s.progress}%;background:${s.textColor}"></div></div>
+        <span style="font-size:11px;color:var(--color-text-tertiary);width:30px;text-align:right">${s.progress}%</span>
+      </div>
+      <div class="deliverable"><span class="del-label">Deliverable: </span>${s.deliverable}</div>
+    </div>
+  `;
+  container.appendChild(div);
+});
+
+function toggleSprint(i) {
+  const body = document.getElementById('body-'+i);
+  const chev = document.getElementById('chev-'+i);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+toggleSprint(0);
+</script>

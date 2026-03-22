@@ -1,0 +1,127 @@
+
+<style>
+#erd svg { width: 100% !important; }
+#erd svg.erDiagram .divider path { stroke-opacity: 0.5; }
+#erd svg.erDiagram .row-rect-odd path,
+#erd svg.erDiagram .row-rect-odd rect,
+#erd svg.erDiagram .row-rect-even path,
+#erd svg.erDiagram .row-rect-even rect { stroke: none !important; }
+</style>
+<div id="erd" style="padding: 1rem 0;"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const diagram = `erDiagram
+  users {
+    uuid id PK
+    string email
+    string full_name
+    string password_hash
+    string oauth_provider
+    string plan
+    timestamp created_at
+  }
+  subscriptions {
+    uuid id PK
+    uuid user_id FK
+    string razorpay_sub_id
+    string status
+    timestamp expires_at
+  }
+  jd_analyses {
+    uuid id PK
+    uuid user_id FK
+    text jd_raw
+    jsonb extracted_skills
+    jsonb gap_report
+    string status
+    timestamp created_at
+  }
+  resumes {
+    uuid id PK
+    uuid user_id FK
+    string s3_key
+    jsonb parsed_sections
+    float match_score
+    timestamp uploaded_at
+  }
+  prep_kits {
+    uuid id PK
+    uuid jd_analysis_id FK
+    jsonb question_bank
+    jsonb study_plan
+    timestamp generated_at
+  }
+  interview_sessions {
+    uuid id PK
+    uuid user_id FK
+    uuid prep_kit_id FK
+    string mode
+    string status
+    float overall_score
+    timestamp started_at
+  }
+  interview_answers {
+    uuid id PK
+    uuid session_id FK
+    text question
+    text answer_text
+    float score
+    jsonb feedback
+  }
+  kafka_events {
+    uuid id PK
+    string topic
+    string status
+    jsonb payload
+    int retry_count
+    timestamp created_at
+  }
+
+  users ||--o{ subscriptions : has
+  users ||--o{ jd_analyses : submits
+  users ||--o{ resumes : uploads
+  users ||--o{ interview_sessions : starts
+  jd_analyses ||--|| prep_kits : generates
+  prep_kits ||--o{ interview_sessions : uses
+  interview_sessions ||--o{ interview_answers : contains
+`;
+const { svg } = await mermaid.render('erd-svg', diagram);
+document.getElementById('erd').innerHTML = svg;
+
+document.querySelectorAll('#erd svg.erDiagram .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+document.querySelectorAll('#erd svg.erDiagram .row-rect-odd path, #erd svg.erDiagram .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
