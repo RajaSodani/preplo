@@ -9,8 +9,10 @@ const passport = require('passport');
 const { globalRateLimiter } = require('./middleware/rateLimiter');
 const { errorHandler } = require('./middleware/errorHandler');
 const { notFound } = require('./middleware/notFound');
+
 const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
+const jdRoutes = require('./routes/jd.routes');
 
 // Passport strategies must be required to register themselves
 require('./config/passport');
@@ -52,6 +54,7 @@ app.get('/health', (req, res) => {
 //  API routes 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/jd', jdRoutes);
 
 //  404 + global error handler (always at last)
 app.use(notFound);
