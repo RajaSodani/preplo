@@ -10,10 +10,13 @@
     "migrate:rollback": "knex migrate:rollback --knexfile src/db/knexfile.js",
     "migrate:make": "knex migrate:make --knexfile src/db/knexfile.js",
     "seed": "knex seed:run --knexfile src/db/knexfile.js",
+    "worker:ai":     "node src/workers/aiWorker.js",
+    "worker:outbox": "node src/workers/outboxRelay.js",
     "test": "jest --runInBand",
     "lint": "eslint src --ext .js"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
